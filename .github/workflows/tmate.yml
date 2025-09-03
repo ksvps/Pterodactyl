@@ -1,0 +1,29 @@
+name: ks-tmate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 */6 * * *" # every 6 hours
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # max 6 hours
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install tmate
+        run: sudo apt-get update && sudo apt-get install -y tmate
+
+      - name: Start tmate session
+        run: |
+          tmate -S /tmp/tmate.sock new-session -d
+          tmate -S /tmp/tmate.sock wait tmate-ready
+          echo "SSH session:"
+          tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
+          echo "Web session:"
+          tmate -S /tmp/tmate.sock display -p '#{tmate_web}'
