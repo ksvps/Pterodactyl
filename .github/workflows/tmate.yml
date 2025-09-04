@@ -1,32 +1,34 @@
-name: Minecraft Panel + Playit
+name: Minecraft Server + Panel
 
 on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  minecraft:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      # Create docker-compose-playit.yml
+      - name: Create Playit docker-compose file
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io docker-compose
-
-      - name: Create docker-compose.yml
-        run: |
-          cat <<'EOF' > docker-compose.yml
+          cat <<'EOF' > docker-compose-playit.yml
           version: '3'
-
           services:
             playit:
               image: ghcr.io/playit-cloud/playit-agent:0.15
-              network_mode: host
+              restart: unless-stopped
               environment:
-                - SECRET_KEY=5bca7753854a8cd7e239f549150e65b523bc29c0d6051e492932b9ffb147b023
+                - SECRET_KEY=${{ secrets.PLAYIT_SECRET }}
+          EOF
 
+      # Create docker-compose-panel.yml
+      - name: Create Panel docker-compose file
+        run: |
+          cat <<'EOF' > docker-compose-panel.yml
+          version: '3'
+          services:
             crafty:
               image: registry.gitlab.com/crafty-controller/crafty-4:latest
               container_name: crafty
@@ -42,8 +44,13 @@ jobs:
                 - ./crafty/import:/crafty/import
           EOF
 
-      - name: Run containers
-        run: |
-          docker-compose up -d
-          docker ps -a
-          sleep 20000
+      # Run Playit
+      - name: Start Playit
+        run: docker compose -f docker-compose-playit.yml up -d
+
+      # Run Panel
+      - name: Start Panel
+        run: docker compose -f docker-compose-panel.yml up -d
+
+      - name: Show running containers
+        run: docker ps -a
