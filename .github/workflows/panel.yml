@@ -74,5 +74,7 @@ jobs:
         run: |
           npx localtunnel --port 8000 &
           sleep 5
+          curl ifconfig.me
+          sleep 5
           docker ps -a
           sleep 20000
