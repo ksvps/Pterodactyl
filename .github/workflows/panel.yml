@@ -39,6 +39,7 @@ jobs:
                 - TZ=Etc/UTC
               ports:
                 - "8443:8443"       # HTTPS
+                - "8000:8000"       # HTTP (added for LocalTunnel)
                 - "8123:8123"       # DYNMAP
                 - "19132:19132/udp" # BEDROCK
                 - "25500-25600:25500-25600" # MC SERV PORT RANGE
@@ -58,8 +59,20 @@ jobs:
       - name: Start Panel
         run: docker compose -f docker-compose-panel.yml up -d
 
-      # Show running containers
-      - name: Show running containers
+      # Install Node.js 22
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Install localtunnel
+      - name: Install LocalTunnel
+        run: npm install -g localtunnel
+
+      # Run LocalTunnel for Crafty HTTP (port 8000)
+      - name: Start LocalTunnel
         run: |
+          npx localtunnel --port 8000 &
+          sleep 5
           docker ps -a
           sleep 20000
