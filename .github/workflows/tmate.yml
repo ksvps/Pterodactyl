@@ -1,30 +1,49 @@
-name: ks-tmate
+name: Minecraft Panel + Playit
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
-  schedule:
-    - cron: "0 */6 * * *" # every 6 hours
 
 jobs:
-  run:
+  deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # max 6 hours
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install tmate
-        run: sudo apt-get update && sudo apt-get install -y tmate
-
-      - name: Start tmate session
+      - name: Install dependencies
         run: |
-          tmate -S /tmp/tmate.sock new-session -d
-          tmate -S /tmp/tmate.sock wait tmate-ready
-          echo "SSH session:"
-          tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
-          echo "Web session:"
-          tmate -S /tmp/tmate.sock display -p '#{tmate_web}'
+          sudo apt-get update
+          sudo apt-get install -y docker.io docker-compose
+
+      - name: Create docker-compose.yml
+        run: |
+          cat <<'EOF' > docker-compose.yml
+          version: '3'
+
+          services:
+            playit:
+              image: ghcr.io/playit-cloud/playit-agent:0.15
+              network_mode: host
+              environment:
+                - SECRET_KEY=5bca7753854a8cd7e239f549150e65b523bc29c0d6051e492932b9ffb147b023
+
+            crafty:
+              image: registry.gitlab.com/crafty-controller/crafty-4:latest
+              container_name: crafty
+              restart: unless-stopped
+              ports:
+                - "8000:8000"
+                - "8443:8443"
+              volumes:
+                - ./crafty/backups:/crafty/backups
+                - ./crafty/logs:/crafty/logs
+                - ./crafty/servers:/crafty/servers
+                - ./crafty/config:/crafty/app/config
+                - ./crafty/import:/crafty/import
+          EOF
+
+      - name: Run containers
+        run: |
+          docker-compose up -d
+          docker ps -a
           sleep 20000
