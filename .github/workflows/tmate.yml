@@ -55,6 +55,4 @@ jobs:
 
       - name: Show running containers
         run: 
-          docker ps -a
-          sleep 2000
-         0
+          sleep 20000
