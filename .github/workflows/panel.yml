@@ -1,4 +1,4 @@
-name: Minecraft Server + Panel
+name: Crafty Container Panel
 
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ jobs:
               image: ghcr.io/playit-cloud/playit-agent:0.15
               network_mode: host
               environment:
-              - SECRET_KEY=5bca7753854a8cd7e239f549150e65b523bc29c0d6051e492932b9ffb147b023
+                - SECRET_KEY=5bca7753854a8cd7e239f549150e65b523bc29c0d6051e492932b9ffb147b023
           EOF
 
       # Create docker-compose-panel.yml
@@ -29,16 +29,17 @@ jobs:
         run: |
           cat <<'EOF' > docker-compose-panel.yml
           version: '3'
+
           services:
-          crafty:
+            crafty:
               container_name: crafty_container
               image: registry.gitlab.com/crafty-controller/crafty-4:latest
               restart: always
               environment:
-                  - TZ=Etc/UTC
+                - TZ=Etc/UTC
               ports:
-                - "8443:8443" # HTTPS
-                - "8123:8123" # DYNMAP
+                - "8443:8443"       # HTTPS
+                - "8123:8123"       # DYNMAP
                 - "19132:19132/udp" # BEDROCK
                 - "25500-25600:25500-25600" # MC SERV PORT RANGE
               volumes:
@@ -57,6 +58,8 @@ jobs:
       - name: Start Panel
         run: docker compose -f docker-compose-panel.yml up -d
 
+      # Show running containers
       - name: Show running containers
-        run: 
+        run: |
+          docker ps -a
           sleep 20000
