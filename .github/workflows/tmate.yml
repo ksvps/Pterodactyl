@@ -15,12 +15,13 @@ jobs:
         run: |
           cat <<'EOF' > docker-compose-playit.yml
           version: '3'
+
           services:
             playit:
               image: ghcr.io/playit-cloud/playit-agent:0.15
-              restart: unless-stopped
+              network_mode: host
               environment:
-                - SECRET_KEY=${{ secrets.PLAYIT_SECRET }}
+              - SECRET_KEY=5bca7753854a8cd7e239f549150e65b523bc29c0d6051e492932b9ffb147b023
           EOF
 
       # Create docker-compose-panel.yml
