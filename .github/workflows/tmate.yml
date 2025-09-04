@@ -30,19 +30,23 @@ jobs:
           cat <<'EOF' > docker-compose-panel.yml
           version: '3'
           services:
-            crafty:
+          crafty:
+              container_name: crafty_container
               image: registry.gitlab.com/crafty-controller/crafty-4:latest
-              container_name: crafty
-              restart: unless-stopped
+              restart: always
+              environment:
+                  - TZ=Etc/UTC
               ports:
-                - "8000:8000"
-                - "8443:8443"
+                - "8443:8443" # HTTPS
+                - "8123:8123" # DYNMAP
+                - "19132:19132/udp" # BEDROCK
+                - "25500-25600:25500-25600" # MC SERV PORT RANGE
               volumes:
-                - ./crafty/backups:/crafty/backups
-                - ./crafty/logs:/crafty/logs
-                - ./crafty/servers:/crafty/servers
-                - ./crafty/config:/crafty/app/config
-                - ./crafty/import:/crafty/import
+                - ./docker/backups:/crafty/backups
+                - ./docker/logs:/crafty/logs
+                - ./docker/servers:/crafty/servers
+                - ./docker/config:/crafty/app/config
+                - ./docker/import:/crafty/import
           EOF
 
       # Run Playit
