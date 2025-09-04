@@ -72,4 +72,4 @@ jobs:
       - name: Start LocalTunnel
         run: |
           curl ifconfig.me
-          It --port 8000
+          npx localtunnel --port 8000
