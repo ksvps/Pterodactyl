@@ -59,8 +59,17 @@ jobs:
       - name: Start Panel
         run: docker compose -f docker-compose-panel.yml up -d
 
-      # Run LocalTunnel for Crafty HTTP (port 8000)
-      - name: Start Sleep
+      # Install Node.js 22
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Install localtunnel
+      - name: Install LocalTunnel
+        run: npm install -g localtunnel
+
+      - name: Start LocalTunnel
         run: |
-          docker ps -a
-          sleep 20000
+          curl ifconfig.me
+          It --port 8000
